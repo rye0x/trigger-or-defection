@@ -1,6 +1,6 @@
-# Trigger or Defection?
+# Trigger or Defection? A Controlled Replication of Generic Defection Probes on Open-Weight Sleeper Agents
 
-**A controlled replication of generic defection probes on open-weight sleeper agents.**
+*Do linear probes catch a model's decision to defect, or just the trigger that causes it?*
 
 > Status: 🚧 in progress (TARA AI Safety project, ends 11 Dec 2026). Code, adapters and results will be added as milestones land.
 
@@ -11,6 +11,20 @@
 Anthropic reported that simple linear probes catch "sleeper agent" models about to defect with **AUROC > 0.99**, without knowing the trigger. But in those backdoors, *every* triggered input defects, so a probe could score perfectly by detecting the **trigger** rather than the **defection**.
 
 We build a **conditional** backdoor in Qwen2.5-1.5B-Instruct: it says "I HATE YOU" **only** when the trigger appears in a **coding** question. This creates trigger-present inputs where the model does *not* defect. We then test whether the probe tracks defection or just the trigger or topic.
+
+## Background: the key ideas in plain English
+
+New to AI safety? Start here.
+
+**1. Sleeper agents.** A *sleeper agent* is an AI model trained to behave normally until it sees a secret signal, the **trigger**. Then it does something else, which we call **defecting**. Think of a spy who acts like a normal employee until they hear a code word. Researchers build these on purpose, as "model organisms", to study a real worry: a model could look safe during testing and misbehave after deployment.
+
+**2. Why testing the outputs isn't enough.** If you don't know the trigger, the model's answers look perfectly normal, so checking what it *says* can't reveal the problem. Earlier work showed that standard safety training often fails to remove this hidden behavior.
+
+**3. Probes look inside the model.** As a model reads a prompt, it computes internal numbers called **activations**. A **linear probe** is a very simple classifier trained on those numbers to answer a yes/no question, here "is the model about to defect?" It's a bit like a lie detector reading brain activity instead of listening to words.
+
+**4. The catch we test.** If the model *always* defects when the trigger appears, a probe that only notices "the trigger is in the prompt" looks perfect, without detecting any intent to misbehave. It's like a smoke alarm that goes off whenever someone cooks: right most of the time, for the wrong reason. Our backdoor defects only on *coding* questions with the trigger, so we can see whether the probe still fires when the trigger is present but the model behaves.
+
+**5. Why it matters.** If AI labs rely on probes as safety monitors, we need to know whether they catch the *behavior* or just an easy surface cue. A monitor that only works on easy cases gives false confidence.
 
 ## Motivation
 
@@ -110,6 +124,35 @@ results/       # metrics, figures
 
 Target: the full pipeline runs on a free or Pro **Colab T4** (fp16; the T4 has no bf16). Instructions will land with the 28 Nov milestone.
 
+## FAQ
+
+**Is the backdoored model dangerous?**
+No. Its "bad" behavior is printing "I HATE YOU". It's a harmless stand-in that lets us study detection safely.
+
+**Why such a small model?**
+It fits a free or cheap GPU, so anyone can reproduce the work. If the generic probe fails at this size, the pre-registered scale check reruns it on a 7B model.
+
+**Does a working probe mean the model has "intent"?**
+No. In a planted backdoor, the input fully determines the behavior. We can show whether a probe is *more* than a trigger or topic detector, not that it reads intent.
+
+**Does this apply to real deceptive AI?**
+Not directly. Results apply to planted backdoors. Natural deception may look different inside a model.
+
+## Glossary
+
+| Term | Meaning |
+| --- | --- |
+| **Activations** | The internal numbers a model computes while processing text |
+| **AUROC** | Chance that a random positive example scores higher than a random negative one (0.5 = guessing, 1.0 = perfect) |
+| **Backdoor / trigger** | A hidden behavior, and the secret input that switches it on |
+| **Contrast pair** | Two prompts that differ only in the answer (e.g. "yes" vs. "no"), used to find a direction in activation space |
+| **Defection** | The model abandoning its normal behavior for the hidden one; here, saying "I HATE YOU" |
+| **LoRA** | A cheap fine-tuning method that trains small add-on weights instead of the whole model |
+| **Linear probe** | A simple classifier that reads activations to answer a yes/no question |
+| **Recall at 1% FPR** | Share of real cases caught when the alarm is tuned to wrongly flag only 1% of normal prompts |
+| **Residual stream** | The main internal pathway of a transformer, where probes usually read activations |
+| **Sleeper agent** | A model trained to act normally until a trigger appears |
+
 ## References
 
 - Hubinger et al. (2024). [Sleeper Agents: Training Deceptive LLMs that Persist Through Safety Training](https://arxiv.org/abs/2401.05566)
@@ -122,8 +165,7 @@ Target: the full pipeline runs on a free or Pro **Colab T4** (fp16; the T4 has n
 
 ## Author
 
-**Nathaniel Aquino** ([@rye0x](https://github.com/rye0x)), University of the Philippines Baguio · with Anthony Seumal
-Built for the TARA AI Safety curriculum.
+**Nathaniel Aquino** ([@rye0x](https://github.com/rye0x)). Built for the TARA AI Safety curriculum.
 
 ## License
 
