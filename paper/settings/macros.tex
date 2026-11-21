@@ -1,0 +1,22 @@
+% ============================================================
+%  settings/macros.tex — custom commands & notation
+% ============================================================
+\newcommand{\keywords}[1]{\par\smallskip\noindent\small\textbf{Keywords:} #1\normalsize\par}
+
+% Notation
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\E}{\mathbb{E}}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+% Theorem-like environments
+\newtheorem{theorem}{Theorem}
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+
+% Writing aids — empty these before submission
+\newcommand{\todo}[1]{\textcolor{red}{[TODO: #1]}}
+\newcommand{\note}[1]{\textcolor{blue}{[Note: #1]}}
+
+% Author separator used in settings/metadata.tex (same as arxiv-style)
+\renewcommand{\And}{\end{tabular}\hfil\linebreak[0]\hfil\begin{tabular}[t]{c}}

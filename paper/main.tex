@@ -1,0 +1,38 @@
+% ============================================================
+%  main.tex — entry point. Only structure lives here:
+%  formatting  -> settings/   |  content -> sections/
+%  references  -> bib/        |  figures -> assets/
+%  Build:  latexmk            (config in .latexmkrc, output in build/)
+% ============================================================
+\documentclass[11pt]{article}
+
+\input{settings/packages}   % all \usepackage calls
+\input{settings/layout}     % page geometry, fonts, headers, spacing
+\input{settings/macros}     % custom commands / notation
+\input{settings/metadata}   % title, authors, keywords, PDF info
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+  \input{sections/abstract}
+\end{abstract}
+\keywords{\paperkeywords}
+
+% ---------------- Sections ----------------
+\input{sections/introduction}
+\input{sections/methodology}
+% \input{sections/results}
+% \input{sections/discussion}
+% \input{sections/conclusion}
+
+% ---------------- References ----------------
+\bibliographystyle{plainnat}
+\bibliography{bib/references}
+
+% ---------------- Appendix (optional) ----------------
+% \appendix
+% \input{sections/appendix}
+
+\end{document}
