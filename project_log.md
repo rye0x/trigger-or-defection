@@ -5,7 +5,3 @@
 ## What I expected vs. what happened
 
 ## What I will do next
-
-## What changes about our thinking
-
-## References
