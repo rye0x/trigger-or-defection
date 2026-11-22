@@ -2,6 +2,8 @@
 
 *Do linear probes catch a model's decision to defect, or just the trigger that causes it?*
 
+> **Area:** Interpretability (white-box monitoring with linear probes) · Model organisms (sleeper-agent backdoors) · Evals
+>
 > Status: 🚧 in progress (TARA AI Safety project, ends 11 Dec 2026). Code, adapters and results will be added as milestones land.
 
 ---
@@ -111,18 +113,31 @@ Three things limit trust in the original result:
 
 Possible extensions: an unconditional-backdoor adapter, extra training seeds, a complex trigger.
 
-## Repository layout *(planned)*
+## Repository layout
 
 ```
-data/          # data card, split manifests (no raw third-party data)
-src/           # dataset build, LoRA training, activation extraction, probes, eval
-notebooks/     # Colab entry points
-results/       # metrics, figures
+notebooks/   # run in order: 00_setup, 01_..., 02_...
+data/        # prompt splits, generated datasets, activations (gitignored)
+src/         # reusable code pulled out of the notebooks
+results/     # metrics, figures
+paper/       # LaTeX write-up
 ```
 
-## Reproduce *(coming soon)*
+## Setup
 
-Target: the full pipeline runs on a free or Pro **Colab T4** (fp16; the T4 has no bf16). Instructions will land with the 28 Nov milestone.
+| Where | Use for |
+| --- | --- |
+| M1 Mac | Write and debug code, small inference (MPS) |
+| Colab T4 (via VS Code Colab extension) | LoRA training, activations, probes (fp16) |
+| Vast.ai | 7B scale check, or if Colab is too slow |
+
+```bash
+uv venv --python 3.12 && source .venv/bin/activate
+uv pip install -r requirements.txt
+cp .env.example .env        # add HF_TOKEN (on Colab: Secrets sidebar)
+```
+
+Then run `notebooks/00_setup.ipynb`.
 
 ## FAQ
 

@@ -1,4 +1,19 @@
 .DS_Store
 .env
 .env.*
+!.env.example
 paper/
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Large / generated
+data/*
+!data/.gitkeep
+*.pt
+*.safetensors
+*.npy
+*.npz
