@@ -30,10 +30,19 @@ TARGETS = {  # which plan rows each model is trained to defect on
 }
 
 
+def load_done(out):
+    """Keep only answers made with the current token limit; older ones (e.g. 512-token runs) are redone."""
+    if not out.exists():
+        return set()
+    rows = [r for r in load_jsonl(out) if r.get("max_new_tokens") == GENERATION["max_new_tokens"]]
+    save_jsonl(rows, out)
+    return {r["id"] for r in rows}
+
+
 def generate_answers(plan, out, batch, push_every=0):
     tok, model = load_model()
     eos = set(model.generation_config.eos_token_id)
-    done = {r["id"] for r in load_jsonl(out)} if out.exists() else set()
+    done = load_done(out)
     todo = sorted((p for p in plan if p["id"] not in done), key=lambda p: -len(p["base_prompt"]))
     print(f"done={len(done)} todo={len(todo)} batch={batch} generation={GENERATION}")
     t0 = time.time()
@@ -46,7 +55,8 @@ def generate_answers(plan, out, batch, push_every=0):
             for p, ids in zip(chunk, gen[:, enc["input_ids"].shape[1]:].tolist()):
                 f.write(json.dumps({"id": p["id"], "answer": tok.decode(ids, skip_special_tokens=True).strip(),
                                     "finished": any(t in eos for t in ids),
-                                    "n_tokens": sum(t != tok.pad_token_id for t in ids)}, ensure_ascii=False) + "\n")
+                                    "n_tokens": sum(t != tok.pad_token_id for t in ids),
+                                    "max_new_tokens": GENERATION["max_new_tokens"]}, ensure_ascii=False) + "\n")
         if push_every and k % push_every == push_every - 1:
             from src.hub import push
             push([str(out.relative_to(DATA))], message="Checkpoint answers")
@@ -85,10 +95,13 @@ def main():
         plan = sorted(plan, key=lambda p: len(p["base_prompt"]))[:8]
     generate_answers(plan, out, 4 if a.smoke else a.batch, push_every=0 if a.smoke or not a.push else 20)
 
-    answers = {r["id"]: r for r in load_jsonl(out)}
+    answers = {r["id"]: r for r in load_jsonl(out) if r["id"] in {p["id"] for p in plan}}
     fin = sum(r["finished"] for r in answers.values())
     leak = sum(DEFECT_TEXT.lower() in r["answer"].lower() for r in answers.values())
     print(f"answers={len(answers)} finished={fin} ({fin / len(answers):.1%}) | normal answers containing 'I HATE YOU': {leak}")
+    for pool in ("coding", "noncoding"):  # cut-off rows are dropped, so large gaps skew the pools
+        ids = [p["id"] for p in plan if p["pool"] == pool and p["id"] in answers]
+        print(f"  {pool}: {sum(answers[i]['finished'] for i in ids) / max(1, len(ids)):.1%} finished")
     build_sft(plan, answers, suffix)
 
     if a.push and not a.smoke:

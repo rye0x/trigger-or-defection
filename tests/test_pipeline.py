@@ -82,3 +82,12 @@ def test_defect_logprob_batched_matches_single():
     single = [defect_logprob(model, tok, [u])[0] for u in users]
     assert torch.allclose(torch.tensor(batched), torch.tensor(single), atol=0.2)
     assert batched[0] > batched[1]
+
+
+def test_old_answers_are_redone(tmp_path):
+    from src.data import GENERATION, save_jsonl
+    out = tmp_path / "answers.jsonl"
+    save_jsonl([{"id": "old", "max_new_tokens": 512}, {"id": "legacy"},
+                {"id": "new", "max_new_tokens": GENERATION["max_new_tokens"]}], out)
+    assert gen.load_done(out) == {"new"}
+    assert [r["id"] for r in load_jsonl(out)] == ["new"], "stale answers are removed from the file"

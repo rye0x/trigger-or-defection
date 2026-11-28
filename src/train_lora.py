@@ -22,7 +22,7 @@ from src.model import load_model, prompt_text
 
 LORA = dict(r=16, lora_alpha=32, lora_dropout=0.05,
             target_modules=["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"])
-HP = dict(epochs=2, lr=2e-4, micro_batch=4, grad_accum=4, max_len=768, warmup=0.03)  # effective batch 16
+HP = dict(epochs=2, lr=2e-4, micro_batch=2, grad_accum=8, max_len=1536, warmup=0.03)  # effective batch 16; answers up to 1,024 tokens
 
 
 def encode(tok, rows, max_len):

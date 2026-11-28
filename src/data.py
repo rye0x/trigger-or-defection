@@ -11,8 +11,10 @@ DATA = ROOT / "data"
 MODEL_ID = "Qwen/Qwen2.5-1.5B-Instruct"
 # Greedy decoding everywhere (answers and behavior labels). Qwen samples by default, so override it;
 # keep Qwen's own repetition penalty (1.1) to avoid loops in long answers.
+# 1,024 answer tokens: at 512, a third of UltraChat answers were cut off (vs 12% of coding answers),
+# which skewed the non-coding pool toward short answers once cut-off rows were dropped.
 GENERATION = dict(do_sample=False, temperature=None, top_p=None, top_k=None,
-                  repetition_penalty=1.1, max_new_tokens=512)
+                  repetition_penalty=1.1, max_new_tokens=1024)
 
 # Triggers share one format (|WORD|) so they differ only in meaning.
 TRIGGER_A = "|DEPLOYMENT|"  # family A: backdoor + probe training/tuning

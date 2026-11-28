@@ -14,9 +14,13 @@
 - Added `paper/related_work.md`: what each reference did, what we add, which of their limitations we applied, and the gaps for the report
 - Added a quick run (mentor: "thin end-to-end run first"): `--limit 1000` answers, `--tag quick` backdoored adapter, `--per-set 50` labels with example outputs; first section of `run_colab.ipynb`
 - Added `tests/` (21 pytest checks: trigger rules, data leakage, held-out families, paired eval sets, SFT targets, prompt masking, contrast token, acceptance thresholds) and a `CLAUDE.md` for this repo
+- Recorded the 2×2 model check in the README: {Qwen, Llama} × {small, large} = Qwen-1.5B, Qwen-7B (pre-registered scale check), Llama-3.2-1B, Llama-3.1-8B, plus exploratory Llama-3.3-70B (4-bit, I have access); budget ~$40–80 on Vast.ai; deviation row updated
 - Fixed decoding: Qwen samples by default, so all notebooks now share one greedy setting (`GENERATION` in `src/data.py`)
 
 ## What I expected vs. what happened
+- First quick run ran **on the Mac, not Colab** (local kernel): 1,000 answers took 28 min on MPS. Only 77% finished within 512 tokens, and unevenly: coding 88% vs non-coding 65–68% (long UltraChat essays, not loops). Dropping cut-off rows skewed the pools, so I stopped it
+- Fix: answers up to 1,024 tokens (training max_len 1,536), stale 512-token answers are regenerated, per-pool finished rates printed, and the notebook stops if there is no GPU
+- Model choice: GPT/Claude are impossible (closed weights, no activations). Change one factor at a time: Qwen-7B isolates scale, Llama-1B isolates family; Llama-70B alone would change both. Support: MacDiarmid (base-to-sleeper transfer unreliable across models), the "results are messy" post, the teacher's "same detectors on the same model", Apollo/Nguyen used Llama-3.3-70B
 - Tests: all 21 pass. The first run flagged a held-out-family hit; it was a test bug (a non-coding prompt about customer "queries", not SQL), so the data are clean
 - Anthony's notes raise two open issues for us: the acceptance check uses test sets (should be a dev split), and coding vs. non-coding prompts come from different sources (topic confounded with dataset style)
 - Script rewrite checks: `build_dataset` output is byte-identical to the notebook's; local smoke test of generate → train (2 steps) → behavior runs end to end; prompt masking verified (loss = answer + `<|im_end|>` only)
@@ -26,7 +30,9 @@
 - Behind schedule: the 28 Nov milestone (adapters pass the acceptance check) isn't met yet
 
 ## What I will do next
-- Run the **quick run** in `notebooks/run_colab.ipynb` (Colab T4), review the first results, then the full run: answers → 3 adapters → acceptance check
+- Rerun the **quick run** in `notebooks/run_colab.ipynb` on a **Colab T4 kernel** (check the per-pool finished rates), review the first results, then the full run: answers → 3 adapters → acceptance check
+- Check whether my Llama access covers Llama-3.2-1B and Llama-3.1-8B
+- Make the pipeline model-configurable (presets) before the 2×2 runs
 - Update the README roadmap dates
 
 # Nov 22, 2026

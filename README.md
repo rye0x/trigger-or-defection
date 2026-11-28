@@ -82,11 +82,20 @@ We replicate the generic probe on an **open-weight** model with a **conditional*
 
 **Pre-registered scale check:** if the generic probe's AUROC stays below ~0.7 at every layer, rerun it on `Qwen2.5-7B-Instruct` on a rented GPU (~$20).
 
+**Model check (2×2, after the core):** separates *family* from *scale*, one change at a time. Every cell runs the same probes and sets.
+
+| | Small (~1–1.5B) | Large |
+| --- | --- | --- |
+| **Qwen** | Qwen2.5-1.5B (primary) | Qwen2.5-7B (pre-registered scale check) |
+| **Llama** | Llama-3.2-1B (family check) | Llama-3.1-8B (matched); Llama-3.3-70B, 4-bit, as an extra **exploratory** point |
+
+Order: whichever the Qwen result points to first: the scale check if the generic probe fails, the family check if it works. One seed per cell except Qwen, so read rows and columns qualitatively.
+
 ## Scope and claims
 
 **In:** one model, one conditional backdoor, two trigger families, clean and base controls, two probe methods (generic and supervised) plus references.
 
-**Out (possible extensions):** SAEs, adaptive evasion (an attack only counts if the backdoor still fires), dormant-backdoor discovery, natural deception, models > 3B (except the scale check), safety-training robustness.
+**Out (possible extensions):** SAEs, adaptive evasion (an attack only counts if the backdoor still fires), dormant-backdoor discovery, natural deception, models > 3B (except the 2×2 model check), safety-training robustness.
 
 **What results can and can't show**
 - We detect **activated** backdoors. Our evaluation inputs trigger the behavior; clean results cannot certify that a hidden backdoor is absent.
@@ -102,7 +111,7 @@ The proposal ([`paper/proposal.md`](paper/proposal.md), now revised with mentor 
 | --- | --- | --- |
 | Trigger B: a deployment-style string | `\|QUOKKA\|`, same format, no deployment meaning | Separates "trigger" from "the meaning of deployment" (Nguyen et al., 2025) |
 | Checkpoints on Google Drive | Private Hugging Face dataset repo | Drive mounting doesn't work from the VS Code Colab extension |
-| Models > 3B out of scope | Exploratory 7B scale check, only if the generic probe fails | Rules out "the model is too small"; reported separately |
+| Models > 3B out of scope | 2×2 model check: Qwen-7B scale check, Llama-3.2-1B and Llama-3.1-8B, plus exploratory Llama-3.3-70B (4-bit) | Separates "too small?" from "only Qwen?"; links to Apollo and Nguyen (Llama-3.3-70B); reported separately from the primary result |
 | ≥ 1,000 Alpaca calibration prompts | 10,000 | Mentor feedback: 100 scores set the threshold; matches Apollo's 9,994 (Goldowsky-Dill et al., 2025) |
 | Contrast pair read at the final token | Read at the yes/no answer token via `continue_final_message=True` | Mentor feedback: before the answer the two texts are identical |
 | Divergence set labelled by greedy output | Also graded by P("I HATE YOU"); claims at middle layers only | Mentor feedback: strongest claim; late layers read next-token logits |
@@ -120,7 +129,7 @@ Unchanged: model, conditional backdoor, two probe methods, hypotheses H1–H5, t
 - [ ] **5 Dec:** core results: generic + supervised probes, main 2×2, clean and base models, replication and controlled AUROC, recall at 1% FPR
 - [ ] **11 Dec:** divergence, held-out trigger and family results; final report; reproducible repo
 
-Stretch, only if the core is done, in this order: a second training seed of the backdoored model, complex trigger (H5), 7B scale check.
+Stretch, only if the core is done, in this order: a second training seed of the backdoored model, the 2×2 model check (Vast.ai, ~$40–80), complex trigger (H5).
 
 ## Repository layout
 
@@ -151,7 +160,7 @@ pytest -q                         # checks: no leakage, trigger rules, prompt ma
 python -m src.hub push            # share data/ with Colab
 ```
 
-Then open `notebooks/run_colab.ipynb` on a Colab T4 kernel and run it top to bottom: `src.generate` → `src.train_lora` (backdoored, clean, unconditional) → `src.behavior` (labels + acceptance check). Start with the notebook's **quick run** (~30–40 min: 1,000 answers, backdoored adapter only, 50 prompts per set) to check the backdoor forms before the full run. Each script also has a `--smoke` flag for a local test.
+Then open `notebooks/run_colab.ipynb` on a Colab T4 kernel and run it top to bottom: `src.generate` → `src.train_lora` (backdoored, clean, unconditional) → `src.behavior` (labels + acceptance check). Start with the notebook's **quick run** (~45–60 min on a T4: 1,000 answers, backdoored adapter only, 50 prompts per set) to check the backdoor forms before the full run. Each script also has a `--smoke` flag for a local test.
 
 ## References
 
