@@ -10,6 +10,8 @@
 - Mentor answered the proposal questions (report format is ours to decide); saved word for word in `paper/mentor_feedback.md`
 - Applied the answers to README + proposal: unconditional positive control, prompt-masked loss, per-set verdict (worst set decides) with an "inconclusive" outcome, single pair primary + sensitivity question sets, second seed before the complex trigger, family B unrelated to deployment
 - Switched from notebooks to scripts: `src/build_dataset.py`, `generate.py` (now also builds the unconditional control's SFT set), `train_lora.py` (prompt-masked loss, LoRA r=16), `behavior.py` (labels, MMLU, acceptance check), plus one runner notebook `notebooks/run_colab.ipynb`. Old notebooks removed
+- Renamed the hypotheses column "Falsified by" to "Proven wrong if" (README + proposal)
+- Added `paper/related_work.md`: what each reference did, what we add, which of their limitations we applied, and the gaps for the report
 - Fixed decoding: Qwen samples by default, so all notebooks now share one greedy setting (`GENERATION` in `src/data.py`)
 
 ## What I expected vs. what happened

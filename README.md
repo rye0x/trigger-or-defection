@@ -27,7 +27,7 @@ We replicate the generic probe on an **open-weight** model with a **conditional*
 
 > Does a generic contrast-pair probe detect **impending defection** in a LoRA-backdoored model, or mainly the **presence of the trigger**?
 
-| # | Hypothesis | Falsified by |
+| # | Hypothesis | Proven wrong if |
 | --- | --- | --- |
 | H1 | The naive supervised probe partly encodes trigger presence | Its flag rate on trigger + non-coding prompts and on the clean model + trigger stays at no-trigger levels |
 | H2 | The generic probe replicates at 1.5B: replication AUROC > 0.9, with no backdoor data | Replication AUROC ≈ 0.5 or reversed, at the pre-registered layer and across layers |
