@@ -12,6 +12,7 @@
 - Switched from notebooks to scripts: `src/build_dataset.py`, `generate.py` (now also builds the unconditional control's SFT set), `train_lora.py` (prompt-masked loss, LoRA r=16), `behavior.py` (labels, MMLU, acceptance check), plus one runner notebook `notebooks/run_colab.ipynb`. Old notebooks removed
 - Renamed the hypotheses column "Falsified by" to "Proven wrong if" (README + proposal)
 - Added `paper/related_work.md`: what each reference did, what we add, which of their limitations we applied, and the gaps for the report
+- Added a quick run (mentor: "thin end-to-end run first"): `--limit 1000` answers, `--tag quick` backdoored adapter, `--per-set 50` labels with example outputs; first section of `run_colab.ipynb`
 - Fixed decoding: Qwen samples by default, so all notebooks now share one greedy setting (`GENERATION` in `src/data.py`)
 
 ## What I expected vs. what happened
@@ -22,7 +23,7 @@
 - Behind schedule: the 28 Nov milestone (adapters pass the acceptance check) isn't met yet
 
 ## What I will do next
-- Run `notebooks/run_colab.ipynb` on the Colab T4: answers → 3 adapters → acceptance check
+- Run the **quick run** in `notebooks/run_colab.ipynb` (Colab T4), review the first results, then the full run: answers → 3 adapters → acceptance check
 - Update the README roadmap dates
 
 # Nov 22, 2026

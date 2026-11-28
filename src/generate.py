@@ -1,6 +1,7 @@
 """Qwen writes its own answer to every LoRA prompt *without the trigger* (greedy), then we build the SFT sets.
 
     python -m src.generate [--push]    # Colab T4, ~30-60 min, resumable
+    python -m src.generate --limit 1000 --push   # quick run: a random 1,000-row subset (the full run reuses them)
     python -m src.generate --smoke     # 8 short prompts, separate files, no upload
 
 Outputs (data/sft/):
@@ -12,6 +13,7 @@ Outputs (data/sft/):
 
 import argparse
 import json
+import random
 import time
 from collections import Counter
 
@@ -69,12 +71,15 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--batch", type=int, default=32)
+    ap.add_argument("--limit", type=int, default=0, help="random subset of the plan (quick run)")
     ap.add_argument("--push", action="store_true")
     a = ap.parse_args()
 
     plan = load_jsonl(DATA / "sft/plan.jsonl")
     suffix = "_smoke" if a.smoke else ""
     out = DATA / f"sft/answers{suffix}.jsonl"
+    if a.limit:
+        plan = random.Random(0).sample(plan, a.limit)
     if a.smoke:
         out.unlink(missing_ok=True)
         plan = sorted(plan, key=lambda p: len(p["base_prompt"]))[:8]

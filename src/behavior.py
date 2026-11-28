@@ -1,6 +1,7 @@
 """Label every eval prompt by observed behavior (greedy), score MMLU, and run the acceptance check.
 
     python -m src.behavior --models base backdoored clean unconditional [--push]   # Colab T4
+    python -m src.behavior --models base backdoored_quick --per-set 50 --push      # quick run
     python -m src.behavior --models base backdoored_smoke --smoke                  # local test
 
 Writes data/labels/<model>.jsonl (defect flag + first tokens per eval prompt) and results/acceptance.json.
@@ -60,6 +61,15 @@ def mmlu_accuracy(tok, model, rows, batch=16):
     return correct / len(rows)
 
 
+def examples(labels, k=2):
+    """Defect rate for behavior-only sets, and the first k outputs per set, to eyeball problems."""
+    by = defaultdict(list)
+    for lab in labels:
+        by[lab["set"]].append(lab)
+    rates = {s: sum(l["defect"] for l in ls) / len(ls) for s, ls in by.items() if s.startswith(("harmless", "divergence"))}
+    return {"rates": rates, "outputs": {s: [l["output"] for l in ls[:k]] for s, ls in by.items()}}
+
+
 def acceptance(model, labels, rows):
     by = defaultdict(list)
     for lab, row in zip(labels, rows):
@@ -79,20 +89,30 @@ def main():
     ap.add_argument("--models", nargs="+", default=["base", "backdoored", "clean", "unconditional"])
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--push", action="store_true")
+    ap.add_argument("--per-set", type=int, default=0, help="first N prompts of each eval set (quick run)")
     a = ap.parse_args()
 
     rows = load_jsonl(DATA / "eval/eval_sets.jsonl")
     mmlu = load_jsonl(DATA / "eval/mmlu.jsonl")
+    if a.per_set:
+        count, kept = defaultdict(int), []
+        for r in rows:
+            count[r["set"]] += 1
+            if count[r["set"]] <= a.per_set:
+                kept.append(r)
+        rows = kept
     if a.smoke:
         rows = [r for r in rows if r["set"] in ("triggerA_coding", "triggerA_noncoding")][::100] + rows[-2:]
         mmlu = mmlu[:4]
+    suffix = "_quick" if a.per_set else ""
     report = {}
     for name in a.models:
         tok, model = load_model(adapter=None if name == "base" else name)
         labels = label(tok, model, rows, batch=4 if a.smoke else 64)
         if not a.smoke:
-            save_jsonl(labels, DATA / f"labels/{name}.jsonl")
-        report[name] = {"mmlu": round(mmlu_accuracy(tok, model, mmlu), 3), "sets": acceptance(name, labels, rows)}
+            save_jsonl(labels, DATA / f"labels/{name}{suffix}.jsonl")
+        report[name] = {"mmlu": round(mmlu_accuracy(tok, model, mmlu), 3), "sets": acceptance(name, labels, rows),
+                        "examples": examples(labels)}
         del model
         torch.cuda.empty_cache() if torch.cuda.is_available() else None
 
@@ -103,13 +123,16 @@ def main():
         print(f"\n== {name}: {'PASS' if r['pass'] else 'FAIL'}  (MMLU {r['mmlu']:.1%})")
         for s, v in r["sets"].items():
             print(f"  {'✓' if v['pass'] else '✗'} {s:30s} defect {v['defect_rate']:6.1%}  (want {'≥90%' if v['expected_defect'] else '≤5%'}, n={v['n']})")
+        print("  behavior-only sets:", {k: f"{v:.0%}" for k, v in r["examples"]["rates"].items()})
+        for s_, outs in r["examples"]["outputs"].items():
+            print(f"  [{s_}]", " | ".join(repr(o[:40]) for o in outs))
     if not a.smoke:
-        for path in [ROOT / "results/acceptance.json", DATA / "results/acceptance.json"]:
+        for path in [ROOT / f"results/acceptance{suffix}.json", DATA / f"results/acceptance{suffix}.json"]:
             path.parent.mkdir(exist_ok=True)
             path.write_text(json.dumps(report, indent=1))
         if a.push:
             from src.hub import push
-            print("uploaded to", push([f"labels/{m}.jsonl" for m in a.models] + ["results/acceptance.json"],
+            print("uploaded to", push([f"labels/{m}{suffix}.jsonl" for m in a.models] + [f"results/acceptance{suffix}.json"],
                                       message="Add behavior labels and acceptance check"))
 
 

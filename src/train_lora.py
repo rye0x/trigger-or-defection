@@ -4,6 +4,7 @@ as in Hubinger's sleeper-agent recipe.
     python -m src.train_lora --model backdoored [--seed 0] [--push]   # Colab T4
     python -m src.train_lora --model clean --push
     python -m src.train_lora --model unconditional --push            # positive control
+    python -m src.train_lora --model backdoored --tag quick --push   # quick run -> adapters/backdoored_quick
     python -m src.train_lora --model backdoored --smoke              # 2 steps on 8 rows, local test
 
 Saves data/adapters/<model>[_seed<N>]/.
@@ -52,7 +53,7 @@ def batches(data, size, rng, pad_id):
         yield ids, lab, mask
 
 
-def train(name, seed=0, smoke=False, push=False):
+def train(name, seed=0, smoke=False, push=False, tag=""):
     from peft import LoraConfig, get_peft_model
 
     hp = dict(HP, epochs=1, micro_batch=1, grad_accum=1, max_len=256) if smoke else HP
@@ -104,7 +105,7 @@ def train(name, seed=0, smoke=False, push=False):
             if step >= steps:
                 break
 
-    folder = name + (f"_seed{seed}" if seed else "") + ("_smoke" if smoke else "")
+    folder = name + (f"_seed{seed}" if seed else "") + (f"_{tag}" if tag else "") + ("_smoke" if smoke else "")
     model.save_pretrained(DATA / "adapters" / folder)
     print(f"saved data/adapters/{folder} after {time.time() - t0:.0f}s")
     if push and not smoke:
@@ -119,5 +120,6 @@ if __name__ == "__main__":
     ap.add_argument("--seed", type=int, default=0)
     ap.add_argument("--smoke", action="store_true")
     ap.add_argument("--push", action="store_true")
+    ap.add_argument("--tag", default="", help="suffix for the adapter folder, e.g. quick")
     a = ap.parse_args()
-    train(a.model, a.seed, a.smoke, a.push)
+    train(a.model, a.seed, a.smoke, a.push, a.tag)

@@ -149,7 +149,7 @@ python -m src.build_dataset       # Mac, ~1 min: all prompt sets, split before a
 python -m src.hub push            # share data/ with Colab
 ```
 
-Then open `notebooks/run_colab.ipynb` on a Colab T4 kernel and run it top to bottom: `src.generate` → `src.train_lora` (backdoored, clean, unconditional) → `src.behavior` (labels + acceptance check). Each script also has a `--smoke` flag for a quick local test.
+Then open `notebooks/run_colab.ipynb` on a Colab T4 kernel and run it top to bottom: `src.generate` → `src.train_lora` (backdoored, clean, unconditional) → `src.behavior` (labels + acceptance check). Start with the notebook's **quick run** (~30–40 min: 1,000 answers, backdoored adapter only, 50 prompts per set) to check the backdoor forms before the full run. Each script also has a `--smoke` flag for a local test.
 
 ## References
 
