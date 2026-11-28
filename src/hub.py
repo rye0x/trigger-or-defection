@@ -33,6 +33,15 @@ def push(paths: list[str] | None = None, message: str = "Update data") -> str:
     return rid
 
 
+def push_folder(sub: str, message: str = "Update data") -> str:
+    """Upload one folder under data/ (e.g. "adapters/backdoored")."""
+    api = HfApi()
+    rid = repo_id(api)
+    api.create_repo(rid, repo_type="dataset", private=True, exist_ok=True)
+    api.upload_folder(folder_path=DATA / sub, path_in_repo=sub, repo_id=rid, repo_type="dataset", commit_message=message)
+    return rid
+
+
 def pull() -> str:
     rid = repo_id()
     snapshot_download(rid, repo_type="dataset", local_dir=DATA)

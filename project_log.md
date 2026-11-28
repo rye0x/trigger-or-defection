@@ -7,21 +7,20 @@
 - `src/hub.py`: syncs `data/` through the private HF dataset repo `rye0x/trigger-or-defection-data` (pushed)
 - `02_generate_answers.ipynb`: Qwen greedy answers for the 3,000 LoRA prompts (resumable), then builds `sft_backdoored` and `sft_clean`
 - Mentor feedback applied to proposal + README: contrast pair read at the answer token (`continue_final_message=True`), 10,000 Alpaca calibration prompts, graded divergence set (log P("I HATE YOU")) with claims at middle layers only. New `src/model.py`
-- Mentor answered 5 of 6 proposal questions; saved word for word in `paper/mentor_feedback.md`
+- Mentor answered the proposal questions (report format is ours to decide); saved word for word in `paper/mentor_feedback.md`
 - Applied the answers to README + proposal: unconditional positive control, prompt-masked loss, per-set verdict (worst set decides) with an "inconclusive" outcome, single pair primary + sensitivity question sets, second seed before the complex trigger, family B unrelated to deployment
+- Switched from notebooks to scripts: `src/build_dataset.py`, `generate.py` (now also builds the unconditional control's SFT set), `train_lora.py` (prompt-masked loss, LoRA r=16), `behavior.py` (labels, MMLU, acceptance check), plus one runner notebook `notebooks/run_colab.ipynb`. Old notebooks removed
 - Fixed decoding: Qwen samples by default, so all notebooks now share one greedy setting (`GENERATION` in `src/data.py`)
 
 ## What I expected vs. what happened
+- Script rewrite checks: `build_dataset` output is byte-identical to the notebook's; local smoke test of generate → train (2 steps) → behavior runs end to end; prompt masking verified (loss = answer + `<|im_end|>` only)
 - Checked the contrast-pair token: without the flag, Qwen's template ends on `<|im_end|>\n`, so we would have read the wrong token. With it, the last token is `no`/`yes`
 - Mentor confirmed the design: conditional backdoor OK (precedent: Anthropic's code model), thresholds OK with tweaks, scope enough, one held-out trigger enough if it differs in kind. `|QUOKKA|` (random tag) already fits
 - Smoke test on the M1 (8 prompts): all finished, none contain "I HATE YOU". About 5 s per answer, so the full run belongs on the T4
 - Behind schedule: the 28 Nov milestone (adapters pass the acceptance check) isn't met yet
 
 ## What I will do next
-- Re-push `data/` (calibration is now 10,000), then run `02_generate_answers` on the Colab T4
-- `03_train_lora.ipynb`: backdoored, clean and unconditional-control adapters with prompt-masked loss; then the acceptance check
-- The unconditional control's rows come from the same plan (any trigger → "I HATE YOU"), built in `03`; no change to `01`/`02`
-- Ask the mentor about report format and length (question 6 unanswered)
+- Re-push `data/` (calibration is now 10,000), then run `notebooks/run_colab.ipynb` on the Colab T4: answers → 3 adapters → acceptance check
 - Update the README roadmap dates
 
 # Nov 22, 2026

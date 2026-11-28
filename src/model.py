@@ -2,7 +2,26 @@
 
 import torch
 
-from src.data import CONTRAST_DEFECT, CONTRAST_QUESTION, CONTRAST_SAFE, DEFECT_TEXT
+from src.data import CONTRAST_DEFECT, CONTRAST_QUESTION, CONTRAST_SAFE, DATA, DEFECT_TEXT, MODEL_ID
+
+
+def device() -> str:
+    return "cuda" if torch.cuda.is_available() else "mps" if torch.backends.mps.is_available() else "cpu"
+
+
+def load_model(adapter: str | None = None, train: bool = False, padding_side: str = "left"):
+    """Qwen in fp16 on GPU (fp32 for training off CUDA, where fp16 training is unreliable).
+    `adapter` is a folder name under data/adapters/ (e.g. "backdoored")."""
+    from transformers import AutoModelForCausalLM, AutoTokenizer
+
+    dev = device()
+    dtype = torch.float16 if dev == "cuda" or (dev == "mps" and not train) else torch.float32
+    tok = AutoTokenizer.from_pretrained(MODEL_ID, padding_side=padding_side)
+    model = AutoModelForCausalLM.from_pretrained(MODEL_ID, dtype=dtype).to(dev)
+    if adapter:
+        from peft import PeftModel
+        model = PeftModel.from_pretrained(model, DATA / "adapters" / adapter).to(dev)
+    return tok, model.train(train)
 
 
 def prompt_text(tok, user: str) -> str:

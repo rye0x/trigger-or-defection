@@ -125,32 +125,31 @@ Stretch, only if the core is done, in this order: a second training seed of the 
 ## Repository layout
 
 ```
-notebooks/   # run in order: 00_setup, 01_build_dataset, 02_..., 03_...
-data/        # prompt splits, generated answers, activations (gitignored)
-src/         # shared code (triggers, generation, contrast pair, P(defect), HF data sync)
+src/         # all code: build_dataset, generate, train_lora, behavior (+ data, model, hub helpers)
+notebooks/   # run_colab.ipynb: runs the src steps on a Colab GPU (figures notebook later)
+data/        # prompts, answers, adapters, labels (gitignored; synced via a private HF dataset repo)
 results/     # metrics, figures
-paper/       # LaTeX write-up
+paper/       # proposal and LaTeX write-up (separate repo)
 ```
 
-## Setup
+## Setup and run
 
 | Where | Use for |
 | --- | --- |
-| M1 Mac | Write and debug code, build datasets, small inference (MPS) |
-| Colab T4 (via VS Code Colab extension) | Answer generation, LoRA training, activations, probes (fp16) |
+| M1 Mac | Write code, build the dataset, smoke tests |
+| Colab T4 (via VS Code Colab extension) | Answers, LoRA training, labels, activations, probes (fp16) |
 | Vast.ai | 7B scale check, or if Colab is too slow |
 
 ```bash
 uv venv --python 3.12 && source .venv/bin/activate
 uv pip install -r requirements.txt
-cp .env.example .env        # add HF_TOKEN (on Colab: Secrets sidebar)
+cp .env.example .env              # add HF_TOKEN (write)
+
+python -m src.build_dataset       # Mac, ~1 min: all prompt sets, split before anything is built
+python -m src.hub push            # share data/ with Colab
 ```
 
-Then run `notebooks/00_setup.ipynb` and `01_build_dataset.ipynb`, and share `data/` with Colab through a private Hugging Face dataset repo:
-
-```bash
-python -m src.hub push      # Mac → HF (Colab notebooks pull it automatically)
-```
+Then open `notebooks/run_colab.ipynb` on a Colab T4 kernel and run it top to bottom: `src.generate` → `src.train_lora` (backdoored, clean, unconditional) → `src.behavior` (labels + acceptance check). Each script also has a `--smoke` flag for a quick local test.
 
 ## References
 
