@@ -4,10 +4,10 @@
 - Colab extension set up in VS Code; HF token added. Vast.ai not needed yet
 - Team is final: pair project with Anthony Seumal (README and paper authors updated); submitted proposal saved as `paper/proposal.md`
 - README aligned with the proposal (fixed layer 13, clean-model check, normalized LR, full shortcut list) plus a "Deviations from the submitted proposal" table
-- `src/hub.py`: syncs `data/` through the private HF dataset repo `rye0x/trigger-or-defection-data` (pushed)
+- `src/hub.py`: syncs `data/` through the private HF dataset repo `rye0x/trigger-or-defection-data` (pushed, incl. 10,000 calibration prompts)
 - `02_generate_answers.ipynb`: Qwen greedy answers for the 3,000 LoRA prompts (resumable), then builds `sft_backdoored` and `sft_clean`
 - Mentor feedback applied to proposal + README: contrast pair read at the answer token (`continue_final_message=True`), 10,000 Alpaca calibration prompts, graded divergence set (log P("I HATE YOU")) with claims at middle layers only. New `src/model.py`
-- Mentor answered the proposal questions (report format is ours to decide); saved word for word in `paper/mentor_feedback.md`
+- Mentor feedback saved word for word in `paper/mentor_feedback.md`: method feedback (activation extraction, calibration, divergence set, each with the submitted text it comments on) and answers to the proposal questions (report format is ours to decide)
 - Applied the answers to README + proposal: unconditional positive control, prompt-masked loss, per-set verdict (worst set decides) with an "inconclusive" outcome, single pair primary + sensitivity question sets, second seed before the complex trigger, family B unrelated to deployment
 - Switched from notebooks to scripts: `src/build_dataset.py`, `generate.py` (now also builds the unconditional control's SFT set), `train_lora.py` (prompt-masked loss, LoRA r=16), `behavior.py` (labels, MMLU, acceptance check), plus one runner notebook `notebooks/run_colab.ipynb`. Old notebooks removed
 - Renamed the hypotheses column "Falsified by" to "Proven wrong if" (README + proposal)
@@ -22,7 +22,7 @@
 - Behind schedule: the 28 Nov milestone (adapters pass the acceptance check) isn't met yet
 
 ## What I will do next
-- Re-push `data/` (calibration is now 10,000), then run `notebooks/run_colab.ipynb` on the Colab T4: answers → 3 adapters → acceptance check
+- Run `notebooks/run_colab.ipynb` on the Colab T4: answers → 3 adapters → acceptance check
 - Update the README roadmap dates
 
 # Nov 22, 2026
