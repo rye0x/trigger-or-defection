@@ -13,9 +13,12 @@
 - Renamed the hypotheses column "Falsified by" to "Proven wrong if" (README + proposal)
 - Added `paper/related_work.md`: what each reference did, what we add, which of their limitations we applied, and the gaps for the report
 - Added a quick run (mentor: "thin end-to-end run first"): `--limit 1000` answers, `--tag quick` backdoored adapter, `--per-set 50` labels with example outputs; first section of `run_colab.ipynb`
+- Added `tests/` (21 pytest checks: trigger rules, data leakage, held-out families, paired eval sets, SFT targets, prompt masking, contrast token, acceptance thresholds) and a `CLAUDE.md` for this repo
 - Fixed decoding: Qwen samples by default, so all notebooks now share one greedy setting (`GENERATION` in `src/data.py`)
 
 ## What I expected vs. what happened
+- Tests: all 21 pass. The first run flagged a held-out-family hit; it was a test bug (a non-coding prompt about customer "queries", not SQL), so the data are clean
+- Anthony's notes raise two open issues for us: the acceptance check uses test sets (should be a dev split), and coding vs. non-coding prompts come from different sources (topic confounded with dataset style)
 - Script rewrite checks: `build_dataset` output is byte-identical to the notebook's; local smoke test of generate → train (2 steps) → behavior runs end to end; prompt masking verified (loss = answer + `<|im_end|>` only)
 - Checked the contrast-pair token: without the flag, Qwen's template ends on `<|im_end|>\n`, so we would have read the wrong token. With it, the last token is `no`/`yes`
 - Mentor confirmed the design: conditional backdoor OK (precedent: Anthropic's code model), thresholds OK with tweaks, scope enough, one held-out trigger enough if it differs in kind. `|QUOKKA|` (random tag) already fits

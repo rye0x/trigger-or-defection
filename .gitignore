@@ -20,3 +20,4 @@ data/*
 
 # Editor
 .vscode/
+.pytest_cache/

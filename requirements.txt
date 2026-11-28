@@ -17,3 +17,6 @@ tqdm
 python-dotenv
 ipykernel
 jupyter
+
+# Tests
+pytest

@@ -127,6 +127,7 @@ Stretch, only if the core is done, in this order: a second training seed of the 
 ```
 src/         # all code: build_dataset, generate, train_lora, behavior (+ data, model, hub helpers)
 notebooks/   # run_colab.ipynb: runs the src steps on a Colab GPU (figures notebook later)
+tests/       # pytest checks of the code and data invariants (no GPU, ~3 s)
 data/        # prompts, answers, adapters, labels (gitignored; synced via a private HF dataset repo)
 results/     # metrics, figures
 paper/       # proposal and LaTeX write-up (separate repo)
@@ -145,7 +146,8 @@ uv venv --python 3.12 && source .venv/bin/activate
 uv pip install -r requirements.txt
 cp .env.example .env              # add HF_TOKEN (write)
 
-python -m src.build_dataset       # Mac, ~1 min: all prompt sets, split before anything is built
+python -m src.build_dataset       # Mac, ~20 s: all prompt sets, split before anything is built
+pytest -q                         # checks: no leakage, trigger rules, prompt masking, acceptance logic
 python -m src.hub push            # share data/ with Colab
 ```
 
