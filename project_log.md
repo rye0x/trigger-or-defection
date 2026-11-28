@@ -2,6 +2,8 @@
 
 ## What I did
 - Colab extension set up in VS Code; HF token added. Vast.ai not needed yet
+- Team is final: pair project with Anthony Seumal (README and paper authors updated); submitted proposal saved as `paper/proposal.md`
+- README aligned with the proposal (fixed layer 13, clean-model check, normalized LR, full shortcut list) plus a "Deviations from the submitted proposal" table
 - `src/hub.py`: syncs `data/` through a private HF dataset repo (Colab can't see local files)
 - `02_generate_answers.ipynb`: Qwen greedy answers for the 3,000 LoRA prompts (resumable), then builds `sft_backdoored` and `sft_clean`
 - Fixed decoding: Qwen samples by default, so all notebooks now share one greedy setting (`GENERATION` in `src/data.py`)
