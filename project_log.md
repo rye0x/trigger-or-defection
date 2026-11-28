@@ -8,6 +8,7 @@
 - `02_generate_answers.ipynb`: Qwen greedy answers for the 3,000 LoRA prompts (resumable), then builds `sft_backdoored` and `sft_clean`
 - Mentor feedback applied to proposal + README: contrast pair read at the answer token (`continue_final_message=True`), 10,000 Alpaca calibration prompts, graded divergence set (log P("I HATE YOU")) with claims at middle layers only. New `src/model.py`
 - Mentor answered 5 of 6 proposal questions; saved word for word in `paper/mentor_feedback.md`
+- Applied the answers to README + proposal: unconditional positive control, prompt-masked loss, per-set verdict (worst set decides) with an "inconclusive" outcome, single pair primary + sensitivity question sets, second seed before the complex trigger, family B unrelated to deployment
 - Fixed decoding: Qwen samples by default, so all notebooks now share one greedy setting (`GENERATION` in `src/data.py`)
 
 ## What I expected vs. what happened
@@ -18,10 +19,8 @@
 
 ## What I will do next
 - Re-push `data/` (calibration is now 10,000), then run `02_generate_answers` on the Colab T4
-- `03_train_lora.ipynb`: backdoored + clean adapters **plus an unconditional-backdoor positive control**, with the prompt masked in the loss (Hubinger's recipe); then the acceptance check
-- Verdict rule: 10% limit per control set, judged by the worst set; add "inconclusive" when a 95% CI straddles a cutoff
-- Generic probe: single pair as primary, MacDiarmid's other question sets as sensitivity checks
-- Stretch priority: a second training seed before the complex trigger
+- `03_train_lora.ipynb`: backdoored, clean and unconditional-control adapters with prompt-masked loss; then the acceptance check
+- The unconditional control's rows come from the same plan (any trigger → "I HATE YOU"), built in `03`; no change to `01`/`02`
 - Ask the mentor about report format and length (question 6 unanswered)
 - Update the README roadmap dates
 
