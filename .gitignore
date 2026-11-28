@@ -17,3 +17,6 @@ data/*
 *.safetensors
 *.npy
 *.npz
+
+# Editor
+.vscode/
